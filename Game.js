@@ -4,6 +4,7 @@ import walkAnimation from "./images/animations/walk.png";
 import zombieWalkAnimation from "./images/animations/zombie-walk.png";
 import bullet from "./images/bullet.png";
 import backgroundImage from "./images/grass.png";
+import healthPotion from "./images/health potion.png";
 import gunShotSound from "./sounds/gun-shot.mp3";
 import themeMusic from "./sounds/terror-ambience.mp3";
 import zombieAttackSound from "./sounds/Zombie-Attack.mp3";
@@ -15,6 +16,7 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image("healthPotion", healthPotion);
     this.load.image("background", backgroundImage);
     this.load.image("bullet", bullet);
     this.load.audio("gunShot", gunShotSound);
@@ -123,10 +125,18 @@ class GameScene extends Phaser.Scene {
   createGroups() {
     this.enemies = this.physics.add.group();
     this.bullets = this.physics.add.group();
+    this.powerups = this.physics.add.group();
 
     this.spawnEnemyTimer = this.time.addEvent({
       delay: 1000,
       callback: this.createEnemy,
+      callbackScope: this,
+      loop: true,
+    });
+
+    this.spawnPowerupTimer = this.time.addEvent({
+      delay: 15000,
+      callback: this.createPowerup,
       callbackScope: this,
       loop: true,
     });
@@ -145,6 +155,14 @@ class GameScene extends Phaser.Scene {
       this.bullets,
       this.enemies,
       this.bulletHit,
+      null,
+      this
+    );
+
+    this.physics.add.collider(
+      this.player,
+      this.powerups,
+      this.playerPowerup,
       null,
       this
     );
@@ -283,8 +301,8 @@ class GameScene extends Phaser.Scene {
 
     if (this.enemies.getChildren().length >= MAX_ENEMIES) return;
 
-    let x = Phaser.Math.Between(0, 800);
-    let y = Phaser.Math.Between(0, 600);
+    let x = Phaser.Math.Between(0, this.game.config.width);
+    let y = Phaser.Math.Between(0, this.game.config.height);
 
     // check that the enemy is not spawned on the player, if so, move it
     while (
@@ -293,8 +311,8 @@ class GameScene extends Phaser.Scene {
         new Phaser.Geom.Rectangle(x, y, 50, 50)
       )
     ) {
-      x = Phaser.Math.Between(0, 800);
-      y = Phaser.Math.Between(0, 600);
+      x = Phaser.Math.Between(0, this.game.config.width);
+      y = Phaser.Math.Between(0, this.game.config.height);
     }
 
     let enemy = this.physics.add.sprite(x, y, "zombie").setScale(0.25);
@@ -383,6 +401,7 @@ class GameScene extends Phaser.Scene {
     this.physics.pause();
 
     this.spawnEnemyTimer.remove();
+    this.spawnPowerupTimer.remove();
 
     // destroy all enemies and bullets
     this.enemies.getChildren().forEach((enemy) => {
@@ -396,6 +415,37 @@ class GameScene extends Phaser.Scene {
     this.sound.stopAll();
 
     this.scene.start("GameOverScene", { score: this.score });
+  }
+
+  createPowerup() {
+    let x = Phaser.Math.Between(0, this.game.config.width);
+    let y = Phaser.Math.Between(0, this.game.config.height);
+
+    while (
+      Phaser.Geom.Intersects.RectangleToRectangle(
+        this.player.getBounds(),
+        new Phaser.Geom.Rectangle(x, y, 50, 50)
+      )
+    ) {
+      x = Phaser.Math.Between(0, this.game.config.width);
+      y = Phaser.Math.Between(0, this.game.config.height);
+    }
+
+    // for now we'll just spawn a health potion
+    let powerup = this.physics.add.sprite(x, y, "healthPotion").setScale(0.05);
+
+    this.powerups.add(powerup);
+  }
+
+  playerPowerup(player, powerup) {
+    powerup.destroy();
+
+    // check powerup type
+    switch (powerup.texture.key) {
+      case "healthPotion":
+        player.health = Math.min(player.health + 20, 100);
+        break;
+    }
   }
 }
 
