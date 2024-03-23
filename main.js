@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import bullet from "./images/bullet.png";
 import backgroundImage from "./images/grass.png";
+import enemyImage from "./images/tds_zombie/export/Attack/skeleton-attack_0.png";
 import playerImage from "./images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
 
 class GameScene extends Phaser.Scene {
@@ -8,6 +9,7 @@ class GameScene extends Phaser.Scene {
     this.load.image("background", backgroundImage);
     this.load.image("player", playerImage);
     this.load.image("bullet", bullet);
+    this.load.image("enemy", enemyImage);
   }
 
   create() {
@@ -26,15 +28,29 @@ class GameScene extends Phaser.Scene {
     };
 
     this.physics.world.setBounds(0, 0, 800, 600);
+
+    this.enemies = this.physics.add.group();
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: this.createEnemy,
+      callbackScope: this,
+      loop: true,
+    });
   }
 
   createPlayer() {
     this.player = this.physics.add.sprite(100, 100, "player").setScale(0.25);
+    this.player.setCollideWorldBounds(true);
   }
 
   update() {
     this.movePlayerManager();
+    this.moveEnemyManager();
+    this.fireBullets();
+  }
 
+  fireBullets() {
     this.input.on("pointerdown", (pointer) => {
       let bullet = this.physics.add
         .sprite(this.player.x, this.player.y, "bullet")
@@ -50,11 +66,10 @@ class GameScene extends Phaser.Scene {
       });
 
       // Calculate the direction of the bullet
-      let direction = new Phaser.Math.Vector2();
-      this.physics.velocityFromRotation(this.player.rotation, 500, direction);
+      let angle = Phaser.Math.Angle.BetweenPoints(this.player, pointer);
 
       // Set the bullet's velocity
-      bullet.setVelocity(direction.x, direction.y);
+      this.physics.velocityFromRotation(angle, 500, bullet.body.velocity);
     });
   }
 
@@ -102,6 +117,55 @@ class GameScene extends Phaser.Scene {
         );
       }
     }
+  }
+
+  createEnemy() {
+    let x = Phaser.Math.Between(0, 800);
+    let y = Phaser.Math.Between(0, 600);
+
+    let enemy = this.physics.add.sprite(x, y, "enemy").setScale(0.25);
+
+    this.enemies.add(enemy);
+
+    // Stop the enemy when it overlaps with the player
+    this.physics.add.overlap(
+      this.player,
+      enemy,
+      () => {
+        enemy.setVelocity(0, 0);
+      },
+      null,
+      this
+    );
+
+    // add enemy to the group
+    this.enemies.add(enemy);
+  }
+
+  moveEnemyManager() {
+    this.enemies.getChildren().forEach((enemy) => {
+      let angle = Phaser.Math.Angle.Between(
+        enemy.x,
+        enemy.y,
+        this.player.x,
+        this.player.y
+      );
+
+      // Set the enemy's rotation to face the player
+      enemy.rotation = angle;
+
+      // Only move the enemy if it's not overlapping with the player
+      if (
+        !Phaser.Geom.Intersects.RectangleToRectangle(
+          this.player.getBounds(),
+          enemy.getBounds()
+        )
+      ) {
+        this.physics.velocityFromRotation(angle, 100, enemy.body.velocity);
+      } else {
+        enemy.setVelocity(0, 0);
+      }
+    });
   }
 }
 
