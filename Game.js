@@ -4,6 +4,7 @@ import enemyImage from "./images/tds_zombie/export/Attack/skeleton-attack_0.png"
 import playerImage from "./images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
 import gunShotSound from "./sounds/gun-shot.mp3";
 import themeMusic from "./sounds/terror-ambience.mp3";
+import zombieAttackSound from "./sounds/Zombie-Attack.mp3";
 import zombieDeathSound from "./sounds/zombie-death.mp3";
 
 class GameScene extends Phaser.Scene {
@@ -19,6 +20,7 @@ class GameScene extends Phaser.Scene {
     this.load.audio("gunShot", gunShotSound);
     this.load.audio("zombieDeath", zombieDeathSound);
     this.load.audio("theme", themeMusic);
+    this.load.audio("zombieAttack", zombieAttackSound);
   }
 
   create() {
@@ -276,6 +278,10 @@ class GameScene extends Phaser.Scene {
 
       enemy.hit = true;
       enemy.setTint(0xff0000);
+
+      this.sound.play("zombieAttack", {
+        volume: 0.2,
+      });
 
       this.time.delayedCall(1000, () => {
         enemy.hit = false;
