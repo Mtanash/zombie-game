@@ -15,7 +15,15 @@ class GameScene extends Phaser.Scene {
   create() {
     this.add.image(0, 0, "background").setScale(2);
     this.createPlayer();
+    this.createControls();
+    this.setWorldBounds();
+    this.createGroups();
+    this.createColliders();
+    this.createHealthBar();
+    this.setupPointerDownEvent();
+  }
 
+  createControls() {
     // create cursor keys
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -26,9 +34,13 @@ class GameScene extends Phaser.Scene {
       left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     };
+  }
 
+  setWorldBounds() {
     this.physics.world.setBounds(0, 0, 800, 600);
+  }
 
+  createGroups() {
     this.enemies = this.physics.add.group();
     this.bullets = this.physics.add.group();
 
@@ -38,7 +50,9 @@ class GameScene extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+  }
 
+  createColliders() {
     this.physics.add.collider(
       this.player,
       this.enemies,
@@ -54,9 +68,9 @@ class GameScene extends Phaser.Scene {
       null,
       this
     );
+  }
 
-    this.createHealthBar();
-
+  setupPointerDownEvent() {
     this.input.on("pointerdown", (pointer) => {
       this.fireBullet(pointer);
     });
