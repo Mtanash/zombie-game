@@ -322,7 +322,7 @@ class GameScene extends Phaser.Scene {
       bullet.destroy();
     });
 
-    this.scene.start("GameOverScene");
+    this.scene.start("GameOverScene", { score: this.score });
   }
 }
 
