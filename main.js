@@ -21,6 +21,13 @@ class GameScene extends Phaser.Scene {
     this.createColliders();
     this.createHealthBar();
     this.setupPointerDownEvent();
+    this.setupScore();
+  }
+
+  update() {
+    this.movePlayerManager();
+    this.moveEnemyManager();
+    this.updateHealthBar();
   }
 
   createControls() {
@@ -103,12 +110,6 @@ class GameScene extends Phaser.Scene {
 
     this.healthBar.lineStyle(2, 0x000000, 1);
     this.healthBar.strokeRect(this.player.x - 50, this.player.y - 70, 100, 10);
-  }
-
-  update() {
-    this.movePlayerManager();
-    this.moveEnemyManager();
-    this.updateHealthBar();
   }
 
   fireBullet(pointer) {
@@ -247,6 +248,21 @@ class GameScene extends Phaser.Scene {
   bulletHit(bullet, enemy) {
     bullet.destroy();
     enemy.destroy();
+
+    this.score += 10;
+    this.updateScore();
+  }
+
+  setupScore() {
+    this.score = 0;
+    this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, {
+      fontSize: "32px",
+      fill: "#000",
+    });
+  }
+
+  updateScore() {
+    this.scoreText.setText(`Score: ${this.score}`);
   }
 }
 
