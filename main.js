@@ -30,6 +30,7 @@ class GameScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, 800, 600);
 
     this.enemies = this.physics.add.group();
+    this.bullets = this.physics.add.group();
 
     this.time.addEvent({
       delay: 1000,
@@ -38,7 +39,7 @@ class GameScene extends Phaser.Scene {
       loop: true,
     });
 
-    this.physics.add.overlap(
+    this.physics.add.collider(
       this.player,
       this.enemies,
       this.playerHit,
@@ -46,7 +47,19 @@ class GameScene extends Phaser.Scene {
       this
     );
 
+    this.physics.add.collider(
+      this.bullets,
+      this.enemies,
+      this.bulletHit,
+      null,
+      this
+    );
+
     this.createHealthBar();
+
+    this.input.on("pointerdown", (pointer) => {
+      this.fireBullet(pointer);
+    });
   }
 
   createPlayer() {
@@ -81,31 +94,30 @@ class GameScene extends Phaser.Scene {
   update() {
     this.movePlayerManager();
     this.moveEnemyManager();
-    this.fireBullets();
     this.updateHealthBar();
   }
 
-  fireBullets() {
-    this.input.on("pointerdown", (pointer) => {
-      let bullet = this.physics.add
-        .sprite(this.player.x, this.player.y, "bullet")
-        .setScale(4);
+  fireBullet(pointer) {
+    let bullet = this.physics.add
+      .sprite(this.player.x, this.player.y, "bullet")
+      .setScale(4);
 
-      bullet.setCollideWorldBounds(true);
-      bullet.body.onWorldBounds = true;
+    this.bullets.add(bullet);
 
-      this.physics.world.on("worldbounds", (body) => {
-        if (body.gameObject === bullet) {
-          bullet.destroy();
-        }
-      });
+    bullet.setCollideWorldBounds(true);
+    bullet.body.onWorldBounds = true;
 
-      // Calculate the direction of the bullet
-      let angle = Phaser.Math.Angle.BetweenPoints(this.player, pointer);
-
-      // Set the bullet's velocity
-      this.physics.velocityFromRotation(angle, 500, bullet.body.velocity);
+    this.physics.world.on("worldbounds", (body) => {
+      if (body.gameObject === bullet) {
+        bullet.destroy();
+      }
     });
+
+    // Calculate the direction of the bullet
+    let angle = Phaser.Math.Angle.BetweenPoints(this.player, pointer);
+
+    // Set the bullet's velocity
+    this.physics.velocityFromRotation(angle, 500, bullet.body.velocity);
   }
 
   movePlayerManager() {
@@ -155,6 +167,10 @@ class GameScene extends Phaser.Scene {
   }
 
   createEnemy() {
+    const MAX_ENEMIES = 10;
+
+    if (this.enemies.getChildren().length >= MAX_ENEMIES) return;
+
     let x = Phaser.Math.Between(0, 800);
     let y = Phaser.Math.Between(0, 600);
 
@@ -203,7 +219,7 @@ class GameScene extends Phaser.Scene {
 
   playerHit(player, enemy) {
     if (!enemy.hit) {
-      player.health -= 10;
+      player.health = Math.max(player.health - 10, 0);
       enemy.hit = true;
       enemy.setTint(0xff0000);
 
@@ -212,6 +228,11 @@ class GameScene extends Phaser.Scene {
         enemy.clearTint();
       });
     }
+  }
+
+  bulletHit(bullet, enemy) {
+    bullet.destroy();
+    enemy.destroy();
   }
 }
 
