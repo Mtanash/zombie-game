@@ -323,19 +323,33 @@ class GameScene extends Phaser.Scene {
 
     if (this.enemies.getChildren().length >= MAX_ENEMIES) return;
 
-    let x = Phaser.Math.Between(0, this.game.config.width);
-    let y = Phaser.Math.Between(0, this.game.config.height);
+    // Determine which quadrant the player is in
+    let playerQuadrant = {
+      x: Math.floor(this.player.x / (this.game.config.width / 2)),
+      y: Math.floor(this.player.y / (this.game.config.height / 2)),
+    };
 
-    // check that the enemy is not spawned on the player, if so, move it
-    while (
-      Phaser.Geom.Intersects.RectangleToRectangle(
-        this.player.getBounds(),
-        new Phaser.Geom.Rectangle(x, y, 50, 50)
-      )
-    ) {
-      x = Phaser.Math.Between(0, this.game.config.width);
-      y = Phaser.Math.Between(0, this.game.config.height);
-    }
+    // Get a random quadrant that is not the player's quadrant
+    let spawnQuadrant;
+    do {
+      spawnQuadrant = {
+        x: Phaser.Math.Between(0, 1),
+        y: Phaser.Math.Between(0, 1),
+      };
+    } while (
+      spawnQuadrant.x === playerQuadrant.x &&
+      spawnQuadrant.y === playerQuadrant.y
+    );
+
+    // Calculate the spawn position within the chosen quadrant
+    let x = Phaser.Math.Between(
+      spawnQuadrant.x * (this.game.config.width / 2),
+      (spawnQuadrant.x + 1) * (this.game.config.width / 2)
+    );
+    let y = Phaser.Math.Between(
+      spawnQuadrant.y * (this.game.config.height / 2),
+      (spawnQuadrant.y + 1) * (this.game.config.height / 2)
+    );
 
     let enemy = this.physics.add.sprite(x, y, "zombie").setScale(0.25);
     enemy.hit = false;
