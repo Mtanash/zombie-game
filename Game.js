@@ -62,6 +62,12 @@ class GameScene extends Phaser.Scene {
     this.powerupSpawnThreshold = 15000;
 
     this._enemiesKilled = 0;
+
+    this.MAX_ENEMIES_PER_SPAWN = 10;
+  }
+
+  get MAX_ENEMIES_PER_SPAWN() {
+    return this._maxEnemiesPerSpawn;
   }
 
   get enemiesKilled() {
@@ -319,9 +325,7 @@ class GameScene extends Phaser.Scene {
   }
 
   createEnemy() {
-    const MAX_ENEMIES = 10;
-
-    if (this.enemies.getChildren().length >= MAX_ENEMIES) return;
+    if (this.enemies.getChildren().length >= this.MAX_ENEMIES_PER_SPAWN) return;
 
     // Determine which quadrant the player is in
     let playerQuadrant = {
