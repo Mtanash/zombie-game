@@ -184,26 +184,17 @@ class GameScene extends Phaser.Scene {
 
     this.player.setVelocity(velocity.x, velocity.y);
 
-    if (velocity.length() > 0) {
-      let targetAngle = Phaser.Math.Angle.Between(0, 0, velocity.x, velocity.y);
+    // Calculate the angle between the player and the pointer
+    let pointer = this.input.activePointer;
+    let angle = Phaser.Math.Angle.Between(
+      this.player.x,
+      this.player.y,
+      pointer.x,
+      pointer.y
+    );
 
-      // Interpolate between the current angle and the target angle
-      if (this.player.rotation !== targetAngle) {
-        let delta = Phaser.Math.Angle.Wrap(targetAngle - this.player.rotation);
-
-        if (delta > Math.PI) {
-          delta -= 2 * Math.PI;
-        }
-
-        if (delta < -Math.PI) {
-          delta += 2 * Math.PI;
-        }
-
-        this.player.rotation = Phaser.Math.Angle.Wrap(
-          this.player.rotation + delta * 0.2
-        );
-      }
-    }
+    // Set the player's rotation to this angle
+    this.player.rotation = angle;
   }
 
   createEnemy() {
