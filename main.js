@@ -1,11 +1,13 @@
 import Phaser from "phaser";
+import bullet from "./images/bullet.png";
 import backgroundImage from "./images/grass.png";
-import playerImage from "./images/Top_Down_Survivor/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
+import playerImage from "./images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
 
 class GameScene extends Phaser.Scene {
   preload() {
     this.load.image("background", backgroundImage);
     this.load.image("player", playerImage);
+    this.load.image("bullet", bullet);
   }
 
   create() {
@@ -22,6 +24,8 @@ class GameScene extends Phaser.Scene {
       left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     };
+
+    this.physics.world.setBounds(0, 0, 800, 600);
   }
 
   createPlayer() {
@@ -30,6 +34,28 @@ class GameScene extends Phaser.Scene {
 
   update() {
     this.movePlayerManager();
+
+    this.input.on("pointerdown", (pointer) => {
+      let bullet = this.physics.add
+        .sprite(this.player.x, this.player.y, "bullet")
+        .setScale(4);
+
+      bullet.setCollideWorldBounds(true);
+      bullet.body.onWorldBounds = true;
+
+      this.physics.world.on("worldbounds", (body) => {
+        if (body.gameObject === bullet) {
+          bullet.destroy();
+        }
+      });
+
+      // Calculate the direction of the bullet
+      let direction = new Phaser.Math.Vector2();
+      this.physics.velocityFromRotation(this.player.rotation, 500, direction);
+
+      // Set the bullet's velocity
+      bullet.setVelocity(direction.x, direction.y);
+    });
   }
 
   movePlayerManager() {
