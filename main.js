@@ -189,6 +189,17 @@ class GameScene extends Phaser.Scene {
     let x = Phaser.Math.Between(0, 800);
     let y = Phaser.Math.Between(0, 600);
 
+    // check that the enemy is not spawned on the player, if so, move it
+    while (
+      Phaser.Geom.Intersects.RectangleToRectangle(
+        this.player.getBounds(),
+        new Phaser.Geom.Rectangle(x, y, 50, 50)
+      )
+    ) {
+      x = Phaser.Math.Between(0, 800);
+      y = Phaser.Math.Between(0, 600);
+    }
+
     let enemy = this.physics.add.sprite(x, y, "enemy").setScale(0.25);
     enemy.hit = false;
 
