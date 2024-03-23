@@ -162,7 +162,9 @@ class GameScene extends Phaser.Scene {
   }
 
   createPlayer() {
-    this.player = this.physics.add.sprite(100, 100, "player").setScale(0.25);
+    this.player = this.physics.add
+      .sprite(this.game.config.width / 2, this.game.config.height / 2, "player")
+      .setScale(0.25);
     this.player.setCollideWorldBounds(true);
     this.player.health = 100;
   }
