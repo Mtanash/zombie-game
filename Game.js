@@ -43,6 +43,7 @@ class GameScene extends Phaser.Scene {
 
   create() {
     this.add.image(0, 0, "background").setScale(3);
+    this.initializeGameModifiers();
     this.createPlayer();
     this.createControls();
     this.setWorldBounds();
@@ -53,6 +54,27 @@ class GameScene extends Phaser.Scene {
     this.setupScore();
     this.handleSound();
     this.createAnimations();
+  }
+
+  initializeGameModifiers() {
+    this.score = 0;
+    this.enemySpawnThreshold = 1000;
+    this.powerupSpawnThreshold = 15000;
+
+    this._enemiesKilled = 0;
+  }
+
+  get enemiesKilled() {
+    return this._enemiesKilled;
+  }
+
+  set enemiesKilled(value) {
+    this._enemiesKilled = value;
+    this.enemySpawnThreshold = Math.max(1000 - this._enemiesKilled * 50, 500);
+    this.powerupSpawnThreshold = Math.max(
+      15000 - this._enemiesKilled * 100,
+      5000
+    );
   }
 
   update() {
@@ -128,14 +150,14 @@ class GameScene extends Phaser.Scene {
     this.powerups = this.physics.add.group();
 
     this.spawnEnemyTimer = this.time.addEvent({
-      delay: 1000,
+      delay: this.enemySpawnThreshold,
       callback: this.createEnemy,
       callbackScope: this,
       loop: true,
     });
 
     this.spawnPowerupTimer = this.time.addEvent({
-      delay: 15000,
+      delay: this.powerupSpawnThreshold,
       callback: this.createPowerup,
       callbackScope: this,
       loop: true,
@@ -381,12 +403,13 @@ class GameScene extends Phaser.Scene {
       volume: 0.2,
     });
 
+    this.enemiesKilled++;
+
     this.score += 10;
     this.updateScore();
   }
 
   setupScore() {
-    this.score = 0;
     this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, {
       fontSize: "32px",
       fill: "#000",
