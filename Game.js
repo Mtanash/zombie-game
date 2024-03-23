@@ -66,10 +66,6 @@ class GameScene extends Phaser.Scene {
     this.MAX_ENEMIES_PER_SPAWN = 10;
   }
 
-  get MAX_ENEMIES_PER_SPAWN() {
-    return this._maxEnemiesPerSpawn;
-  }
-
   get enemiesKilled() {
     return this._enemiesKilled;
   }
