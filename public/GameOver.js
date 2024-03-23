@@ -8,7 +8,7 @@ class GameOverScene extends Phaser.Scene {
       .text(
         this.game.config.width / 2,
         this.game.config.height / 2,
-        "Game Over",
+        "Game Over, press R to restart the game",
         { fontSize: "32px", fill: "#fff" }
       )
       .setOrigin(0.5);
