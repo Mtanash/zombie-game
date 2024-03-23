@@ -8,7 +8,7 @@ class MainMenuScene extends Phaser.Scene {
       .text(
         this.game.config.width / 2,
         this.game.config.height / 2,
-        "Main Menu",
+        "Click to start!",
         { fontSize: "32px", fill: "#fff" }
       )
       .setOrigin(0.5);

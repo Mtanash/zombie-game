@@ -2,6 +2,8 @@ import bullet from "./images/bullet.png";
 import backgroundImage from "./images/grass.png";
 import enemyImage from "./images/tds_zombie/export/Attack/skeleton-attack_0.png";
 import playerImage from "./images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
+import gunShotSound from "./sounds/gun-shot.mp3";
+import zombieDeathSound from "./sounds/zombie-death.mp3";
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -13,6 +15,8 @@ class GameScene extends Phaser.Scene {
     this.load.image("player", playerImage);
     this.load.image("bullet", bullet);
     this.load.image("enemy", enemyImage);
+    this.load.audio("gunShot", gunShotSound);
+    this.load.audio("zombieDeath", zombieDeathSound);
   }
 
   create() {
@@ -136,6 +140,10 @@ class GameScene extends Phaser.Scene {
 
     // Set the bullet's velocity
     this.physics.velocityFromRotation(angle, 500, bullet.body.velocity);
+
+    this.sound.play("gunShot", {
+      volume: 0.7,
+    });
   }
 
   movePlayerManager() {
@@ -267,6 +275,10 @@ class GameScene extends Phaser.Scene {
   bulletHit(bullet, enemy) {
     bullet.destroy();
     enemy.destroy();
+
+    this.sound.play("zombieDeath", {
+      volume: 0.2,
+    });
 
     this.score += 10;
     this.updateScore();
