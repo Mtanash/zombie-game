@@ -3,8 +3,13 @@ import bullet from "./images/bullet.png";
 import backgroundImage from "./images/grass.png";
 import enemyImage from "./images/tds_zombie/export/Attack/skeleton-attack_0.png";
 import playerImage from "./images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
+import GameOverScene from "./public/GameOver";
 
 class GameScene extends Phaser.Scene {
+  constructor() {
+    super({ key: "GameScene" });
+  }
+
   preload() {
     this.load.image("background", backgroundImage);
     this.load.image("player", playerImage);
@@ -51,7 +56,7 @@ class GameScene extends Phaser.Scene {
     this.enemies = this.physics.add.group();
     this.bullets = this.physics.add.group();
 
-    this.time.addEvent({
+    this.spawnEnemyTimer = this.time.addEvent({
       delay: 1000,
       callback: this.createEnemy,
       callbackScope: this,
@@ -205,8 +210,8 @@ class GameScene extends Phaser.Scene {
 
     this.enemies.add(enemy);
 
-    // Stop the enemy when it overlaps with the player
-    this.physics.add.overlap(
+    // Stop the enemy when it collides with the player
+    this.physics.add.collider(
       this.player,
       enemy,
       () => {
@@ -246,6 +251,11 @@ class GameScene extends Phaser.Scene {
   playerHit(player, enemy) {
     if (!enemy.hit) {
       player.health = Math.max(player.health - 10, 0);
+
+      if (player.health === 0) {
+        this.handleGameOver();
+      }
+
       enemy.hit = true;
       enemy.setTint(0xff0000);
 
@@ -275,13 +285,30 @@ class GameScene extends Phaser.Scene {
   updateScore() {
     this.scoreText.setText(`Score: ${this.score}`);
   }
+
+  handleGameOver() {
+    this.physics.pause();
+
+    this.spawnEnemyTimer.remove();
+
+    // destroy all enemies and bullets
+    this.enemies.getChildren().forEach((enemy) => {
+      enemy.destroy();
+    });
+
+    this.bullets.getChildren().forEach((bullet) => {
+      bullet.destroy();
+    });
+
+    this.scene.start("GameOverScene");
+  }
 }
 
 const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  scene: GameScene,
+  scene: [GameScene, GameOverScene],
   physics: {
     default: "arcade",
     arcade: {
@@ -291,3 +318,5 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+export default GameScene;
