@@ -193,7 +193,7 @@ class GameScene extends Phaser.Scene {
   }
 
   fireBullet(pointer) {
-    const BULLET_SPEED = 500;
+    const BULLET_SPEED = 600;
     const GUN_LENGTH = 40;
 
     // Calculate the position of the gun tip
@@ -202,7 +202,7 @@ class GameScene extends Phaser.Scene {
 
     let bullet = this.physics.add
       .sprite(this.player.x + gunTip.x, this.player.y + gunTip.y, "bullet")
-      .setScale(4);
+      .setScale(0.5);
 
     this.bullets.add(bullet);
 
@@ -224,6 +224,9 @@ class GameScene extends Phaser.Scene {
       BULLET_SPEED,
       bullet.body.velocity
     );
+
+    // rotate the bullet to face the direction it's moving
+    bullet.rotation = angle;
 
     this.sound.play("gunShot", {
       volume: 0.7,
