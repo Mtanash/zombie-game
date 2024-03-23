@@ -24,7 +24,7 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.image(0, 0, "background").setScale(2);
+    this.add.image(0, 0, "background").setScale(3);
     this.createPlayer();
     this.createControls();
     this.setWorldBounds();
