@@ -1,7 +1,9 @@
+import idleAnimation from "./images/animations/idle.png";
+import shootAnimation from "./images/animations/shoot.png";
+import walkAnimation from "./images/animations/walk.png";
+import zombieWalkAnimation from "./images/animations/zombie-walk.png";
 import bullet from "./images/bullet.png";
 import backgroundImage from "./images/grass.png";
-import enemyImage from "./images/tds_zombie/export/Attack/skeleton-attack_0.png";
-import playerImage from "./images/Top_Down_Survivor/shotgun/idle/survivor-idle_shotgun_0.png";
 import gunShotSound from "./sounds/gun-shot.mp3";
 import themeMusic from "./sounds/terror-ambience.mp3";
 import zombieAttackSound from "./sounds/Zombie-Attack.mp3";
@@ -14,13 +16,27 @@ class GameScene extends Phaser.Scene {
 
   preload() {
     this.load.image("background", backgroundImage);
-    this.load.image("player", playerImage);
     this.load.image("bullet", bullet);
-    this.load.image("enemy", enemyImage);
     this.load.audio("gunShot", gunShotSound);
     this.load.audio("zombieDeath", zombieDeathSound);
     this.load.audio("theme", themeMusic);
     this.load.audio("zombieAttack", zombieAttackSound);
+    this.load.spritesheet("walk", walkAnimation, {
+      frameWidth: 313,
+      frameHeight: 206,
+    });
+    this.load.spritesheet("shoot", shootAnimation, {
+      frameWidth: 313,
+      frameHeight: 206,
+    });
+    this.load.spritesheet("player", idleAnimation, {
+      frameWidth: 313,
+      frameHeight: 206,
+    });
+    this.load.spritesheet("zombie", zombieWalkAnimation, {
+      frameWidth: 288,
+      frameHeight: 311,
+    });
   }
 
   create() {
@@ -33,17 +49,53 @@ class GameScene extends Phaser.Scene {
     this.createHealthBar();
     this.setEvents();
     this.setupScore();
-
-    this.sound.play("theme", {
-      volume: 0.1,
-      loop: true,
-    });
+    this.handleSound();
+    this.createAnimations();
   }
 
   update() {
     this.movePlayerManager();
     this.moveEnemyManager();
     this.updateHealthBar();
+  }
+
+  createAnimations() {
+    this.anims.create({
+      key: "walk",
+      frames: this.anims.generateFrameNumbers("walk", {
+        start: 0,
+        end: 19,
+      }),
+      frameRate: 20,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "shoot",
+      frames: this.anims.generateFrameNumbers("shoot"),
+      frameRate: 20,
+    });
+
+    this.anims.create({
+      key: "idle",
+      frames: this.anims.generateFrameNumbers("player"),
+      frameRate: 20,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "zombieWalk",
+      frames: this.anims.generateFrameNumbers("zombie"),
+      frameRate: 20,
+      repeat: -1,
+    });
+  }
+
+  handleSound() {
+    this.sound.play("theme", {
+      volume: 0.1,
+      loop: true,
+    });
   }
 
   createControls() {
@@ -60,7 +112,12 @@ class GameScene extends Phaser.Scene {
   }
 
   setWorldBounds() {
-    this.physics.world.setBounds(0, 0, 800, 600);
+    this.physics.world.setBounds(
+      0,
+      0,
+      this.game.config.width,
+      this.game.config.height
+    );
   }
 
   createGroups() {
@@ -169,6 +226,8 @@ class GameScene extends Phaser.Scene {
     this.sound.play("gunShot", {
       volume: 0.7,
     });
+
+    this.player.anims.play("shoot", true);
   }
 
   movePlayerManager() {
@@ -176,18 +235,24 @@ class GameScene extends Phaser.Scene {
 
     if (this.cursors.left.isDown || this.wasd.left.isDown) {
       velocity.x = -1;
+      this.player.anims.play("walk", true);
     } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
       velocity.x = 1;
+      this.player.anims.play("walk", true);
     } else {
       velocity.x = 0;
+      this.player.anims.play("idle", true);
     }
 
     if (this.cursors.up.isDown || this.wasd.up.isDown) {
       velocity.y = -1;
+      this.player.anims.play("walk", true);
     } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
       velocity.y = 1;
+      this.player.anims.play("walk", true);
     } else {
       velocity.y = 0;
+      this.player.anims.play("idle", true);
     }
 
     velocity.normalize();
@@ -227,21 +292,12 @@ class GameScene extends Phaser.Scene {
       y = Phaser.Math.Between(0, 600);
     }
 
-    let enemy = this.physics.add.sprite(x, y, "enemy").setScale(0.25);
+    let enemy = this.physics.add.sprite(x, y, "zombie").setScale(0.25);
     enemy.hit = false;
 
     this.enemies.add(enemy);
 
-    // Stop the enemy when it collides with the player
-    this.physics.add.collider(
-      this.player,
-      enemy,
-      () => {
-        enemy.setVelocity(0, 0);
-      },
-      null,
-      this
-    );
+    enemy.anims.play("zombieWalk", true);
   }
 
   moveEnemyManager() {
