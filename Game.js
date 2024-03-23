@@ -29,7 +29,7 @@ class GameScene extends Phaser.Scene {
     this.createGroups();
     this.createColliders();
     this.createHealthBar();
-    this.setupPointerDownEvent();
+    this.setEvents();
     this.setupScore();
 
     this.sound.play("theme", {
@@ -91,9 +91,14 @@ class GameScene extends Phaser.Scene {
     );
   }
 
-  setupPointerDownEvent() {
+  setEvents() {
     this.input.on("pointerdown", (pointer) => {
       this.fireBullet(pointer);
+    });
+
+    this.input.keyboard.on("keydown-ESC", () => {
+      this.scene.launch("PauseMenu");
+      this.scene.pause();
     });
   }
 
