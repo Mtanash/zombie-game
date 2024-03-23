@@ -37,17 +37,52 @@ class GameScene extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+
+    this.physics.add.overlap(
+      this.player,
+      this.enemies,
+      this.playerHit,
+      null,
+      this
+    );
+
+    this.createHealthBar();
   }
 
   createPlayer() {
     this.player = this.physics.add.sprite(100, 100, "player").setScale(0.25);
     this.player.setCollideWorldBounds(true);
+    this.player.health = 100;
+  }
+
+  createHealthBar() {
+    this.healthBar = this.add.graphics();
+    this.updateHealthBar();
+  }
+
+  updateHealthBar() {
+    this.healthBar.clear();
+    this.healthBar.fillStyle(0x2ecc71, 1);
+
+    // Calculate the width of the health bar based on the player's health
+    let healthBarWidth = this.player.health;
+
+    this.healthBar.fillRect(
+      this.player.x - 50,
+      this.player.y - 70,
+      healthBarWidth,
+      10
+    );
+
+    this.healthBar.lineStyle(2, 0x000000, 1);
+    this.healthBar.strokeRect(this.player.x - 50, this.player.y - 70, 100, 10);
   }
 
   update() {
     this.movePlayerManager();
     this.moveEnemyManager();
     this.fireBullets();
+    this.updateHealthBar();
   }
 
   fireBullets() {
@@ -124,6 +159,7 @@ class GameScene extends Phaser.Scene {
     let y = Phaser.Math.Between(0, 600);
 
     let enemy = this.physics.add.sprite(x, y, "enemy").setScale(0.25);
+    enemy.hit = false;
 
     this.enemies.add(enemy);
 
@@ -137,9 +173,6 @@ class GameScene extends Phaser.Scene {
       null,
       this
     );
-
-    // add enemy to the group
-    this.enemies.add(enemy);
   }
 
   moveEnemyManager() {
@@ -166,6 +199,19 @@ class GameScene extends Phaser.Scene {
         enemy.setVelocity(0, 0);
       }
     });
+  }
+
+  playerHit(player, enemy) {
+    if (!enemy.hit) {
+      player.health -= 10;
+      enemy.hit = true;
+      enemy.setTint(0xff0000);
+
+      this.time.delayedCall(1000, () => {
+        enemy.hit = false;
+        enemy.clearTint();
+      });
+    }
   }
 }
 
