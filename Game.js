@@ -287,6 +287,8 @@ class GameScene extends Phaser.Scene {
         enemy.hit = false;
         enemy.clearTint();
       });
+
+      this.cameras.main.shake(100, 0.01);
     }
   }
 
