@@ -134,8 +134,15 @@ class GameScene extends Phaser.Scene {
   }
 
   fireBullet(pointer) {
+    const BULLET_SPEED = 500;
+    const GUN_LENGTH = 40;
+
+    // Calculate the position of the gun tip
+    let gunTip = new Phaser.Math.Vector2();
+    gunTip.setToPolar(this.player.rotation, GUN_LENGTH);
+
     let bullet = this.physics.add
-      .sprite(this.player.x, this.player.y, "bullet")
+      .sprite(this.player.x + gunTip.x, this.player.y + gunTip.y, "bullet")
       .setScale(4);
 
     this.bullets.add(bullet);
@@ -153,7 +160,11 @@ class GameScene extends Phaser.Scene {
     let angle = Phaser.Math.Angle.BetweenPoints(this.player, pointer);
 
     // Set the bullet's velocity
-    this.physics.velocityFromRotation(angle, 500, bullet.body.velocity);
+    this.physics.velocityFromRotation(
+      angle,
+      BULLET_SPEED,
+      bullet.body.velocity
+    );
 
     this.sound.play("gunShot", {
       volume: 0.7,
