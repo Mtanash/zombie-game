@@ -474,6 +474,10 @@ class GameScene extends Phaser.Scene {
   }
 
   createPowerup() {
+    const maxPowerups = 3;
+
+    if (this.powerups.getChildren().length >= maxPowerups) return;
+
     let x = Phaser.Math.Between(0, this.game.config.width);
     let y = Phaser.Math.Between(0, this.game.config.height);
 
@@ -488,7 +492,9 @@ class GameScene extends Phaser.Scene {
     }
 
     // for now we'll just spawn a health potion
-    let powerup = this.physics.add.sprite(x, y, "healthPotion").setScale(0.05);
+    const powerup = this.physics.add
+      .sprite(x, y, "healthPotion")
+      .setScale(0.05);
 
     this.powerups.add(powerup);
   }
