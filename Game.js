@@ -48,7 +48,7 @@ class GameScene extends Phaser.Scene {
     this.createControls();
     this.setWorldBounds();
     this.createGroups();
-    this.createColliders();
+    this.createOverlaps();
     this.createHealthBar();
     this.setEvents();
     this.setupScore();
@@ -166,8 +166,8 @@ class GameScene extends Phaser.Scene {
     });
   }
 
-  createColliders() {
-    this.physics.add.collider(
+  createOverlaps() {
+    this.physics.add.overlap(
       this.player,
       this.enemies,
       this.playerHit,
@@ -175,7 +175,7 @@ class GameScene extends Phaser.Scene {
       this
     );
 
-    this.physics.add.collider(
+    this.physics.add.overlap(
       this.bullets,
       this.enemies,
       this.bulletHit,
@@ -183,7 +183,7 @@ class GameScene extends Phaser.Scene {
       this
     );
 
-    this.physics.add.collider(
+    this.physics.add.overlap(
       this.player,
       this.powerups,
       this.playerPowerup,
@@ -324,7 +324,7 @@ class GameScene extends Phaser.Scene {
     if (this.enemies.getChildren().length >= this.MAX_ENEMIES_PER_SPAWN) return;
 
     // Determine which quadrant the player is in
-    let playerQuadrant = {
+    const playerQuadrant = {
       x: Math.floor(this.player.x / (this.game.config.width / 2)),
       y: Math.floor(this.player.y / (this.game.config.height / 2)),
     };
@@ -342,16 +342,31 @@ class GameScene extends Phaser.Scene {
     );
 
     // Calculate the spawn position within the chosen quadrant
-    let x = Phaser.Math.Between(
-      spawnQuadrant.x * (this.game.config.width / 2),
-      (spawnQuadrant.x + 1) * (this.game.config.width / 2)
-    );
-    let y = Phaser.Math.Between(
-      spawnQuadrant.y * (this.game.config.height / 2),
-      (spawnQuadrant.y + 1) * (this.game.config.height / 2)
-    );
+    let distance;
+    const minDistance = 400;
+    let x, y;
+    do {
+      x = Phaser.Math.Between(
+        spawnQuadrant.x * (this.game.config.width / 2),
+        (spawnQuadrant.x + 1) * (this.game.config.width / 2)
+      );
+      y = Phaser.Math.Between(
+        spawnQuadrant.y * (this.game.config.height / 2),
+        (spawnQuadrant.y + 1) * (this.game.config.height / 2)
+      );
+      distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        x,
+        y
+      );
+    } while (distance < minDistance);
 
-    let enemy = this.physics.add.sprite(x, y, "zombie").setScale(0.25);
+    const enemy = this.physics.add
+      .sprite(x, y, "zombie")
+      .setScale(0.25)
+      .setCircle(90, 60, 60);
+
     enemy.hit = false;
 
     this.enemies.add(enemy);
@@ -360,8 +375,22 @@ class GameScene extends Phaser.Scene {
   }
 
   moveEnemyManager() {
+    const stopDistance = 60;
+
     this.enemies.getChildren().forEach((enemy) => {
-      let angle = Phaser.Math.Angle.Between(
+      const distance = Phaser.Math.Distance.Between(
+        enemy.x,
+        enemy.y,
+        this.player.x,
+        this.player.y
+      );
+
+      if (distance < stopDistance) {
+        enemy.setVelocity(0, 0);
+        return;
+      }
+
+      const angle = Phaser.Math.Angle.Between(
         enemy.x,
         enemy.y,
         this.player.x,
@@ -371,17 +400,7 @@ class GameScene extends Phaser.Scene {
       // Set the enemy's rotation to face the player
       enemy.rotation = angle;
 
-      // Only move the enemy if it's not overlapping with the player
-      if (
-        !Phaser.Geom.Intersects.RectangleToRectangle(
-          this.player.getBounds(),
-          enemy.getBounds()
-        )
-      ) {
-        this.physics.velocityFromRotation(angle, 100, enemy.body.velocity);
-      } else {
-        enemy.setVelocity(0, 0);
-      }
+      this.physics.velocityFromRotation(angle, 100, enemy.body.velocity);
     });
   }
 
