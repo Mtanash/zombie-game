@@ -77,6 +77,10 @@ class GameScene extends Phaser.Scene {
       15000 - this._enemiesKilled * 100,
       5000
     );
+    this.MAX_ENEMIES_PER_SPAWN = Math.min(
+      10 + Math.floor(this._enemiesKilled / 5),
+      20
+    );
   }
 
   update() {
