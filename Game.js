@@ -248,7 +248,8 @@ class GameScene extends Phaser.Scene {
 
     let bullet = this.physics.add
       .sprite(this.player.x + gunTip.x, this.player.y + gunTip.y, "bullet")
-      .setScale(0.5);
+      .setScale(0.5)
+      .setCircle(20, 50, 40);
 
     this.bullets.add(bullet);
 
