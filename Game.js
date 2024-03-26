@@ -448,9 +448,20 @@ class GameScene extends Phaser.Scene {
   }
 
   setupScore() {
-    this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, {
+    this.scoreText = this.add.text(10, 10, `Score: ${this.score} `, {
       fontSize: "32px",
-      fill: "#000",
+      fill: "#fff",
+      fontFamily: "Arial",
+      stroke: "#000",
+      strokeThickness: 3,
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: "#000",
+        blur: 5,
+        stroke: true,
+        fill: true,
+      },
     });
   }
 
